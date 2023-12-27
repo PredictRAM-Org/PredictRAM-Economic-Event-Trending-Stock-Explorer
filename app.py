@@ -26,7 +26,13 @@ def get_news_articles(query, api_key):
 def get_stock_symbols(file_path):
     try:
         df = pd.read_excel(file_path)
-        symbols = df['Symbol'].tolist()
+
+        # Check if 'StockSymbol' column exists in the DataFrame
+        if 'StockSymbol' not in df.columns:
+            st.warning("The 'StockSymbol' column was not found in the Excel file.")
+            return []
+
+        symbols = df['StockSymbol'].tolist()
         return symbols
     except Exception as e:
         st.error(f"Error reading stock symbols from file: {e}")
