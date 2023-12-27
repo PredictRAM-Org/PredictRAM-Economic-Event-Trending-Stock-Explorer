@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import re
 
 # Function to get news articles based on a search query
 def get_news_articles(query, api_key):
@@ -21,13 +22,17 @@ def get_news_articles(query, api_key):
         return None
 
 # Function to get trending stocks related to economic events
-def get_trending_stocks():
-    # Add your logic to fetch trending stocks based on economic events
-    # You can use financial APIs or news sentiment analysis for this
+def get_trending_stocks(articles):
+    # Extract stock symbols from news articles (using a simple example)
+    # You may need to improve this logic based on the structure of the articles
+    stock_symbols = set()
 
-    # Placeholder data for demonstration purposes
-    trending_stocks = ["Stock1", "Stock2", "Stock3"]
-    return trending_stocks
+    for article in articles:
+        # Extract stock symbols using a simple regular expression
+        matches = re.findall(r'\b[A-Z]{3,5}\b', article['title'])
+        stock_symbols.update(matches)
+
+    return list(stock_symbols)
 
 # Streamlit App
 def main():
@@ -58,14 +63,17 @@ def main():
 
     # Get trending stocks
     if st.button("Get Trending Stocks"):
-        trending_stocks = get_trending_stocks()
+        if news_articles:
+            trending_stocks = get_trending_stocks(news_articles)
 
-        if trending_stocks:
-            st.header("Trending Stocks Related to Economic Events:")
-            for stock in trending_stocks:
-                st.write(f"- {stock}")
+            if trending_stocks:
+                st.header("Trending Stocks Related to Economic Events:")
+                for stock in trending_stocks:
+                    st.write(f"- {stock}")
+            else:
+                st.warning("No trending stocks found.")
         else:
-            st.warning("No trending stocks found.")
+            st.warning("Please search for news articles first.")
 
 if __name__ == "__main__":
     main()
