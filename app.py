@@ -23,8 +23,21 @@ def get_news_articles(query, api_key):
 
 # Function to get trending stocks related to economic events
 def get_trending_stocks(articles):
-    # List of known stock symbols
-    known_stock_symbols = ["AAPL", "GOOGL", "AMZN", "MSFT", "TSLA", "FB", "V", "PYPL", "NFLX", "BA"]
+    # Extract economic event from the search query
+    economic_event = st.session_state.search_query.lower()
+
+    # Map economic events to relevant stocks
+    economic_event_stocks = {
+        "india inflation": ["HDFCBANK", "RELIANCE", "INFY", "TCS", "ITC"],
+        "interest rate": ["ICICIBANK", "HDFCBANK", "AXISBANK", "SBIN"],
+        "gdp india": ["HDFC", "RELIANCE", "TCS", "ICICIBANK", "LTI"],
+        "infrastructure india": ["LT", "L&T", "BAJAJ-AUTO", "HAVELLS", "ABB"],
+        "industrial production": ["BAJAJ-AUTO", "HAVELLS", "ABB", "LT", "TATASTEEL"],
+        "manufacturing india": ["BAJAJ-AUTO", "HAVELLS", "ABB", "LT", "TATASTEEL"]
+    }
+
+    # Get relevant stocks based on the economic event
+    known_stock_symbols = economic_event_stocks.get(economic_event, [])
 
     # Extract stock symbols from news articles
     trending_stocks = set()
@@ -46,6 +59,9 @@ def main():
 
     # Search query input
     search_query = st.text_input("Enter a search query for economic indicator news:")
+
+    # Store the search query in session state
+    st.session_state.search_query = search_query.lower()
 
     # Get news articles
     if st.button("Search News"):
