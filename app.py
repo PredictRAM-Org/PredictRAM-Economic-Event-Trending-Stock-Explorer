@@ -1,6 +1,9 @@
 import streamlit as st
 import requests
-import pandas as pd
+import spacy
+
+# Load spaCy English model
+nlp = spacy.load("en_core_web_sm")
 
 # Function to get news articles based on a search query
 def get_news_articles(query, api_key):
@@ -21,39 +24,16 @@ def get_news_articles(query, api_key):
         st.error("Error fetching news articles.")
         return None
 
-# Function to get trending stocks related to economic events
-def get_trending_stocks(articles):
-    # Extract economic event from the search query
-    economic_event = st.session_state.search_query.lower()
-
-    # Map economic events to relevant stocks
-    economic_event_stocks = {
-        "india inflation": ["HDFCBANK", "RELIANCE", "INFY", "TCS", "ITC"],
-        "interest rate": ["ICICIBANK", "HDFCBANK", "AXISBANK", "SBIN"],
-        "gdp india": ["HDFC", "RELIANCE", "TCS", "ICICIBANK", "LTI"],
-        "infrastructure india": ["LT", "L&T", "BAJAJ-AUTO", "HAVELLS", "ABB"],
-        "industrial production": ["BAJAJ-AUTO", "HAVELLS", "ABB", "LT", "TATASTEEL"],
-        "manufacturing india": ["BAJAJ-AUTO", "HAVELLS", "ABB", "LT", "TATASTEEL"]
-    }
-
-    # Get relevant stocks based on the economic event
-    known_stock_symbols = economic_event_stocks.get(economic_event, [])
-
-    # Debugging statements
-    st.write(f"Search Query: {st.session_state.search_query}")
-    st.write(f"Selected Economic Event: {economic_event}")
-    st.write(f"Known Stock Symbols: {known_stock_symbols}")
-
-    # Extract stock symbols from news articles
-    trending_stocks = set()
+# Function to extract entities from news articles using spaCy
+def get_entities_from_articles(articles):
+    entities = set()
 
     for article in articles:
-        for symbol in known_stock_symbols:
-            # Check if the stock symbol is present in the article title
-            if symbol.lower() in article['title'].lower():
-                trending_stocks.add(symbol)
+        doc = nlp(article['title'])
+        for ent in doc.ents:
+            entities.add(ent.text)
 
-    return list(trending_stocks)
+    return list(entities)
 
 # Streamlit App
 def main():
@@ -64,9 +44,6 @@ def main():
 
     # Search query input
     search_query = st.text_input("Enter a search query for economic indicator news:")
-
-    # Store the search query in session state
-    st.session_state.search_query = search_query.lower()
 
     # Get news articles
     if st.button("Search News"):
@@ -86,17 +63,17 @@ def main():
         else:
             st.warning("Please enter your NewsAPI.org API key.")
 
-    # Get trending stocks
-    if st.button("Get Trending Stocks"):
+    # Get entities from news articles
+    if st.button("Get Entities from Articles"):
         if 'news_articles' in st.session_state:
-            trending_stocks = get_trending_stocks(st.session_state.news_articles)
+            entities = get_entities_from_articles(st.session_state.news_articles)
 
-            if trending_stocks:
-                st.header("Trending Stocks Related to Economic Events:")
-                for stock in trending_stocks:
-                    st.write(f"- {stock}")
+            if entities:
+                st.header("Entities Extracted from Articles:")
+                for entity in entities:
+                    st.write(f"- {entity}")
             else:
-                st.warning("No trending stocks found.")
+                st.warning("No entities found in the articles.")
         else:
             st.warning("Please search for news articles first.")
 
