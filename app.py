@@ -39,6 +39,11 @@ def get_trending_stocks(articles):
     # Get relevant stocks based on the economic event
     known_stock_symbols = economic_event_stocks.get(economic_event, [])
 
+    # Debugging statements
+    st.write(f"Search Query: {st.session_state.search_query}")
+    st.write(f"Selected Economic Event: {economic_event}")
+    st.write(f"Known Stock Symbols: {known_stock_symbols}")
+
     # Extract stock symbols from news articles
     trending_stocks = set()
 
