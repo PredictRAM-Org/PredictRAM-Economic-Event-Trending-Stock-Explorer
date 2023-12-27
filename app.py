@@ -1,12 +1,6 @@
 import streamlit as st
 import requests
 
-# NewsAPI.org API Key (You can replace this with user input)
-API_KEY = "YOUR_NEWSAPI_KEY"
-
-# Base URL for NewsAPI.org
-NEWS_API_URL = "https://newsapi.org/v2/everything"
-
 # Function to get news articles based on a search query
 def get_news_articles(query, api_key):
     params = {
@@ -17,7 +11,7 @@ def get_news_articles(query, api_key):
         'pageSize': 10,
     }
 
-    response = requests.get(NEWS_API_URL, params=params)
+    response = requests.get("https://newsapi.org/v2/everything", params=params)
 
     if response.status_code == 200:
         articles = response.json().get('articles')
@@ -40,15 +34,15 @@ def main():
     st.title("Economic Indicator News and Trending Stocks")
 
     # User input for API key
-    user_api_key = st.text_input("Enter your NewsAPI.org API key:", API_KEY)
+    api_key = st.text_input("Enter your NewsAPI.org API key:")
 
     # Search query input
     search_query = st.text_input("Enter a search query for economic indicator news:")
 
     # Get news articles
     if st.button("Search News"):
-        if user_api_key:
-            news_articles = get_news_articles(search_query, user_api_key)
+        if api_key:
+            news_articles = get_news_articles(search_query, api_key)
 
             if news_articles:
                 st.header("Latest News Articles:")
@@ -59,7 +53,6 @@ def main():
                     st.write("---")
             else:
                 st.warning("No news articles found.")
-
         else:
             st.warning("Please enter your NewsAPI.org API key.")
 
