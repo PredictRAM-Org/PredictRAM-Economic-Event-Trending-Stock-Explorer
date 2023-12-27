@@ -1,6 +1,5 @@
 import streamlit as st
 import requests
-import re
 import pandas as pd
 
 # Function to get news articles based on a search query
@@ -22,31 +21,18 @@ def get_news_articles(query, api_key):
         st.error("Error fetching news articles.")
         return None
 
-# Function to get stock symbols from Excel file
-def get_stock_symbols(file_path):
-    try:
-        df = pd.read_excel(file_path)
-
-        # Check if 'StockSymbol' column exists in the DataFrame
-        if 'StockSymbol' not in df.columns:
-            st.warning("The 'StockSymbol' column was not found in the Excel file.")
-            return []
-
-        symbols = df['StockSymbol'].tolist()
-        return symbols
-    except Exception as e:
-        st.error(f"Error reading stock symbols from file: {e}")
-        return []
-
 # Function to get trending stocks related to economic events
-def get_trending_stocks(articles, stock_symbols):
+def get_trending_stocks(articles):
+    # List of known stock symbols
+    known_stock_symbols = ["AAPL", "GOOGL", "AMZN", "MSFT", "TSLA", "FB", "V", "PYPL", "NFLX", "BA"]
+
     # Extract stock symbols from news articles
     trending_stocks = set()
 
     for article in articles:
-        for symbol in stock_symbols:
+        for symbol in known_stock_symbols:
             # Check if the stock symbol is present in the article title
-            if re.search(rf'\b{symbol}\b', article['title'], flags=re.IGNORECASE):
+            if symbol.lower() in article['title'].lower():
                 trending_stocks.add(symbol)
 
     return list(trending_stocks)
@@ -60,9 +46,6 @@ def main():
 
     # Search query input
     search_query = st.text_input("Enter a search query for economic indicator news:")
-
-    # Excel file input for stock symbols
-    symbols_file = st.file_uploader("Upload Excel file with stock symbols (symbols.xlsx):", type=["xlsx"])
 
     # Get news articles
     if st.button("Search News"):
@@ -85,22 +68,14 @@ def main():
     # Get trending stocks
     if st.button("Get Trending Stocks"):
         if 'news_articles' in st.session_state:
-            if symbols_file is not None:
-                stock_symbols = get_stock_symbols(symbols_file)
+            trending_stocks = get_trending_stocks(st.session_state.news_articles)
 
-                if stock_symbols:
-                    trending_stocks = get_trending_stocks(st.session_state.news_articles, stock_symbols)
-
-                    if trending_stocks:
-                        st.header("Trending Stocks Related to Economic Events:")
-                        for stock in trending_stocks:
-                            st.write(f"- {stock}")
-                    else:
-                        st.warning("No trending stocks found.")
-                else:
-                    st.warning("No stock symbols found in the uploaded file.")
+            if trending_stocks:
+                st.header("Trending Stocks Related to Economic Events:")
+                for stock in trending_stocks:
+                    st.write(f"- {stock}")
             else:
-                st.warning("Please upload a file with stock symbols.")
+                st.warning("No trending stocks found.")
         else:
             st.warning("Please search for news articles first.")
 
