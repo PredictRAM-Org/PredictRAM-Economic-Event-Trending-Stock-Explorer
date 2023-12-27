@@ -49,7 +49,7 @@ def main():
         if api_key:
             news_articles = get_news_articles(search_query, api_key)
 
-            if news_articles:
+            if news_articles is not None:
                 st.header("Latest News Articles:")
                 for article in news_articles:
                     st.write(f"**{article['title']}**")
@@ -63,8 +63,8 @@ def main():
 
     # Get trending stocks
     if st.button("Get Trending Stocks"):
-        if news_articles:
-            trending_stocks = get_trending_stocks(news_articles)
+        if 'news_articles' in st.session_state:
+            trending_stocks = get_trending_stocks(st.session_state.news_articles)
 
             if trending_stocks:
                 st.header("Trending Stocks Related to Economic Events:")
